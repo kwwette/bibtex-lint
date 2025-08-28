@@ -1,0 +1,6 @@
+- id: bibtex-lint
+  name: bibtex-lint
+  entry: bibtex-lint
+  types: [file]
+  files: \.bib$
+  language: python
