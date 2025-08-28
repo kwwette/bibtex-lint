@@ -8,6 +8,7 @@ path = [
     "README.md",
     "new_version_tag.py",
     "pyproject.toml",
+    "test/test-biblio.bib",
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
