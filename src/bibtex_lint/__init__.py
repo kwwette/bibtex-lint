@@ -56,7 +56,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         with open(filename, "wt") as f:
             for line in comment_lines:
                 f.write(line)
-            f.write("\n")
+            if comment_lines:
+                f.write("\n")
             f.write(sorted_bib_data.to_string("bibtex"))
 
     return 0
