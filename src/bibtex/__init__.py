@@ -46,10 +46,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         except Exception:
             msg = f"could not parse BibTeX file {filename}"
             raise ParseError(msg)
+        preamble = bib_data.preamble
 
         # sort BibTeX entries
         sorted_bib_data = BibliographyData(
-            entries=dict(sorted(bib_data.entries.items())), preamble=bib_data.preamble
+            entries=dict(sorted(bib_data.entries.items()))
         )
 
         # format and output BibTeX entries
@@ -58,6 +59,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f.write(line)
             if comment_lines:
                 f.write("\n")
+            if preamble:
+                f.write(f'@preamble{{"{preamble}"}}\n\n')
             f.write(sorted_bib_data.to_string("bibtex"))
 
     return 0
