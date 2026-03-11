@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bibtex"
-version = "0.2"
+version = "0.3"
 description = "pre-commit hook to lint/format BibTeX bibliographies"
 authors = [
     { name = "Karl Wette", email = "karl.wette@anu.edu.au" },
