@@ -7,7 +7,7 @@
 import argparse
 from typing import Sequence
 
-from pybtex.database import parse_string
+from pybtex.database import parse_file
 
 __author__ = "Karl Wette"
 
@@ -25,24 +25,17 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     for filename in args.filenames:
 
-        # read BibTeX file
+        # save BibTeX file comments
         comment_lines = []
-        bibtex_lines = []
         with open(filename, "rt") as f:
             for line in f:
                 line = line.strip()
-
-                # save comment lines
                 if line.startswith("%"):
                     comment_lines.append(line)
 
-                # add all lines to BibTeX, to preserve line numbers when parsing
-                bibtex_lines.append(line)
-
-        # parse BibTeX entries
-        bibtex_string = "".join(bibtex_lines)
+        # read BibTeX file
         try:
-            bib_data = parse_string(bibtex_string, "bibtex")
+            bib_data = parse_file(filename, "bibtex")
         except Exception:
             msg = f"could not parse BibTeX file {filename}"
             raise ParseError(msg)
