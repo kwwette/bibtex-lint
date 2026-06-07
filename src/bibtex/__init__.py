@@ -68,7 +68,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     person_str += " ".join(person.last_names)
                     if len(person.lineage_names) > 0:
                         person_str += ", " + " ".join(person.lineage_names)
-                    person_str += ", " + " ".join(person.first_names)
+                    if len(person.first_names) > 0:
+                        person_str += ", " + " ".join(person.first_names)
                     if len(person.middle_names) > 0:
                         person_str += " " + " ".join(person.middle_names)
                     people_strs.append(person_str.strip())
