@@ -5,10 +5,9 @@
 """pre-commit hook to lint/format BibTeX bibliographies."""
 
 import argparse
-import re
 from typing import Sequence
 
-from pybtex.database import BibliographyData, parse_string
+from pybtex.database import parse_string
 
 __author__ = "Karl Wette"
 
@@ -31,7 +30,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         bibtex_lines = []
         with open(filename, "rt") as f:
             for line in f:
-                line = line.lstrip()
+                line = line.strip()
 
                 # save comment lines
                 if line.startswith("%"):
@@ -47,32 +46,50 @@ def main(argv: Sequence[str] | None = None) -> int:
         except Exception:
             msg = f"could not parse BibTeX file {filename}"
             raise ParseError(msg)
-        preamble = bib_data.preamble
 
         # make entries types all lowercase
         for entry in bib_data.entries.values():
             entry.original_type = entry.original_type.lower()
 
-        # sort BibTeX entries
-        sorted_bib_data = BibliographyData(
-            entries=dict(sorted(bib_data.entries.items()))
-        )
+        # format BibTeX entries
+        lines = []
+        lines.extend(comment_lines)
+        if bib_data.preamble:
+            lines.extend(["", f'@preamble{{"{bib_data.preamble}"}}'])
+        for entry in sorted(bib_data.entries.values(), key=lambda entry: entry.key):
+            lines.extend(["", f"@{entry.original_type.lower()}{{{entry.key},"])
+            entry_lines = []
+            for field, people in entry.persons.items():
+                people_strs = []
+                for person in people:
+                    person_str = ""
+                    if len(person.prelast_names) > 0:
+                        person_str += " " + " ".join(person.prelast_names)
+                    person_str += " ".join(person.last_names)
+                    if len(person.lineage_names) > 0:
+                        person_str += ", " + " ".join(person.lineage_names)
+                    person_str += ", " + " ".join(person.first_names)
+                    if len(person.middle_names) > 0:
+                        person_str += " " + " ".join(person.middle_names)
+                    people_strs.append(person_str.strip())
+                people_str = " and ".join(people_strs)
+                if '"' in people_str:
+                    entry_lines.append(f"    {field} = {{{people_str}}}")
+                else:
+                    entry_lines.append(f'    {field} = "{people_str}"')
+            for field, value in entry.fields.items():
+                if '"' in value:
+                    entry_lines.append(f"    {field} = {{{value}}}")
+                else:
+                    entry_lines.append(f'    {field} = "{value}"')
+            lines.append(",\n".join(entry_lines))
+            lines.append("}")
 
-        # format and output BibTeX entries
+        # output BibTeX entries
+        while lines[0] == "":
+            lines.pop(0)
         with open(filename, "wt") as f:
-            for line in comment_lines:
-                f.write(line)
-            if comment_lines:
-                f.write("\n")
-            if preamble:
-                f.write(f'@preamble{{"{preamble}"}}\n\n')
-            bibtex_lines = sorted_bib_data.to_string("bibtex").splitlines()
-            for line in bibtex_lines:
-
-                # Do not escape underscores and ampersands in URLs
-                if re.search(r"url =", line) is not None:
-                    line = re.sub(r"\\([_&])", r"\1", line)
-
+            for line in lines:
                 print(line, file=f)
 
     return 0
